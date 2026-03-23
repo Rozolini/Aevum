@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the repository.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Installs the stable Rust toolchain with formatting and linting tools.
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      # Caches Rust dependencies to speed up subsequent builds.
+      - name: Set up Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run standard tests
+        run: cargo test --all-features
+

@@ -1,0 +1,38 @@
+name: Miri Safety Checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 3 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  miri:
+    name: Undefined Behavior Testing
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the repository.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Miri requires the nightly toolchain.
+      - name: Install Rust nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri, rust-src
+
+      # Caches Rust dependencies.
+      - name: Set up Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      # Executes standard tests under the Miri interpreter to detect UB.
+      - name: Run Miri
+        run: cargo miri test
+        env:
+          # Enforces strict provenance rules for raw pointers.
+          MIRIFLAGS: "-Zmiri-disable-isolation -Zmiri-tree-borrows -Zmiri-ignore-leaks"

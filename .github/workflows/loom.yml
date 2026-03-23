@@ -1,0 +1,37 @@
+name: Loom Concurrency Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  # Optional: Run nightly to catch edge cases in dependencies
+  schedule:
+    - cron: '0 2 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  loom:
+    name: Exhaustive Concurrency Testing
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the repository.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Installs the stable Rust toolchain.
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # Caches Rust dependencies to speed up subsequent builds.
+      - name: Set up Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      # Executes Loom tests in release mode due to high computational cost.
+      # RUSTFLAGS is required to enable loom-specific atomic replacements.
+      - name: Run Loom tests
+        run: cargo test --test loom_tests --release
+        env:
+          RUSTFLAGS: "--cfg loom"

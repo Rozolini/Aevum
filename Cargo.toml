@@ -1,0 +1,37 @@
+[package]
+name = "aevum"
+version = "0.1.0"
+edition = "2021"
+authors = ["Rozolini"]
+description = "Lock-free concurrent data structures and synchronization primitives."
+repository = "https://github.com/Rozolini/aevum"
+license = "MIT"
+keywords = ["lock-free", "concurrency", "queue", "atomic", "sync"]
+categories = ["concurrency", "data-structures"]
+
+[dependencies]
+crossbeam-epoch = "0.9.18"
+
+# Loom is only included when explicitly compiling with RUSTFLAGS="--cfg loom".
+[target.'cfg(loom)'.dependencies]
+loom = "0.7.2"
+
+[dev-dependencies]
+criterion = "0.8.2"
+# Required for visibility in tests/loom_tests.rs.
+loom = "0.7.2"
+
+[[bench]]
+name = "hashmap_bench"
+harness = false
+
+[[bench]]
+name = "queue_bench"
+harness = false
+
+[[bench]]
+name = "misc_bench"
+harness = false
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(loom)'] }
